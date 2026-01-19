@@ -1,0 +1,27 @@
+settings:
+  forward_concurrency: 10
+  forward_retries: 1
+  forward_retry_backoff_s: 0.3
+  cooldown_s: 10
+
+# ----------------------------
+# Define your IoT device targets here
+targets:
+  - name: esp32
+    url: "http://192.168.0.25/alarm"
+    method: POST
+    timeout_s: 1
+# ----------------------------
+# Define your event rules here
+rules:
+  - event: "rust_smart_alarm_on"
+    targets: ["esp32"]
+    payload_template:
+      action: "on"
+      duration_s: 30
+
+  # Optional: do something on OFF
+  - event: "rust_smart_alarm_off"
+    targets: ["esp32"]
+    payload_template:
+      action: "off"
