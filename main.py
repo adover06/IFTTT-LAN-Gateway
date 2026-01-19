@@ -8,6 +8,7 @@ import httpx
 import yaml
 from dotenv import load_dotenv
 from rustplus import RustSocket, ServerDetails, EntityEvent, EntityEventPayload
+import json
 
 load_dotenv()
 
@@ -187,22 +188,39 @@ async def emit_with_cooldown(cfg: AppConfig, alarm_id: int, event_name: str, dat
 # ----------------------------
 # Rust+ listener
 # ----------------------------
+def load_data_json(path: Optional[str] = None) -> Dict[str, Any]:
+    path = path or os.getenv("DATA_JSON_PATH", "./data.json")
+    if not os.path.exists(path):
+        raise RuntimeError(f"Missing data file: {path}")
+    with open(path, "r", encoding="utf-8") as f:
+        return json.load(f) or {}
 
-def env_required(name: str) -> str:
-    v = os.getenv(name)
-    if not v:
-        raise RuntimeError(f"Missing required env var: {name}")
+_data = load_data_json()
+
+def required(key: str) -> Any:
+    v = _data.get(key)
+    if v is None or (isinstance(v, str) and not v.strip()):
+        raise RuntimeError(f"Missing required data.json key: {key}")
     return v
 
+RUST_IP = required("RUSTPLUS_IP")
+RUST_PORT = required("RUST_PORT")
+STEAM_ID = required("RUSTPLUS_STEAM_ID")
+PLAYER_TOKEN = required("RUSTPLUS_PLAYER_TOKEN")
 
-RUST_IP = env_required("RUSTPLUS_IP")
-RUST_PORT = env_required("RUSTPLUS_PORT")
-STEAM_ID = int(env_required("RUSTPLUS_STEAM_ID"))
-PLAYER_TOKEN = env_required("RUSTPLUS_PLAYER_TOKEN")
+_raw_ids = _data.get("RUSTPLUS_ALARM_ENTITY_IDS")
+if _raw_ids is None:
+    raise RuntimeError("Missing required data.json key: RUSTPLUS_ALARM_ENTITY_IDS")
+
+if isinstance(_raw_ids, list):
+    ALARM_IDS = [int(x) for x in _raw_ids]
+elif isinstance(_raw_ids, str):
+    ALARM_IDS = [int(x) for x in _raw_ids.split(",") if x.strip()]
+else:
+    raise RuntimeError("RUSTPLUS_ALARM_ENTITY_IDS must be a list or comma-separated string")
 
 
-# Support multiple alarms: "123,456,789"
-ALARM_IDS = [int(x.strip()) for x in env_required("RUSTPLUS_ALARM_ENTITY_IDS").split(",") if x.strip()]
+
 
 CONFIG_PATH = os.getenv("RUSTPLUS_BRIDGE_CONFIG", "./config.yaml")
 _cfg = load_config(CONFIG_PATH)

@@ -4,3 +4,4 @@ __pycache__/
 *.pyc
 rustplus.py.config.json
 .env
+data.json
