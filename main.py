@@ -6,11 +6,8 @@ from typing import Any, Dict, List, Optional
 
 import httpx
 import yaml
-from dotenv import load_dotenv
 from rustplus import RustSocket, ServerDetails, EntityEvent, EntityEventPayload
 import json
-
-load_dotenv()
 
 
 # ----------------------------
@@ -189,7 +186,7 @@ async def emit_with_cooldown(cfg: AppConfig, alarm_id: int, event_name: str, dat
 # Rust+ listener
 # ----------------------------
 def load_data_json(path: Optional[str] = None) -> Dict[str, Any]:
-    path = path or os.getenv("DATA_JSON_PATH", "./data.json")
+    path = path or "./data.json"
     if not os.path.exists(path):
         raise RuntimeError(f"Missing data file: {path}")
     with open(path, "r", encoding="utf-8") as f:
@@ -222,7 +219,7 @@ else:
 
 
 
-CONFIG_PATH = os.getenv("RUSTPLUS_BRIDGE_CONFIG", "./config.yaml")
+CONFIG_PATH = "./config.yaml"
 _cfg = load_config(CONFIG_PATH)
 _sem = asyncio.Semaphore(_cfg.settings.forward_concurrency)
 
