@@ -1,10 +1,19 @@
 from rustplus import FCMListener
 import json
+import webbrowser
 
 INITIAL_DATA = False
 
-with open("rustplus.py.config.json", "r") as input_file:
-    fcm_details = json.load(input_file)
+try:
+    with open("rustplus.py.config.json", "r") as input_file:
+        fcm_details = json.load(input_file)
+except FileNotFoundError:
+    print("Missing rustplus.py.config.json file!, goto https://chromewebstore.google.com/detail/rustpluspy-link-companion/gojhnmnggbnflhdcpcemeahejhcimnlf")
+    url = "https://chromewebstore.google.com/detail/rustpluspy-link-companion/gojhnmnggbnflhdcpcemeahejhcimnlf"
+    webbrowser.open(url)
+    exit(1)
+except Exception as e:
+    print(f"Error loading rustplus.py.config.json: {e}")
 
 def write_alarmid_to_file(alarm_id):
     with open("data.json", "r") as f:

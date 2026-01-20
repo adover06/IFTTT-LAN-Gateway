@@ -51,7 +51,7 @@ source venv/bin/activate
 
 ### 3. Install dependencies
 ```bash
-pip install rustplus httpx pyyaml
+pip install -r requirements.txt
 ```
 
 ## Configuration
